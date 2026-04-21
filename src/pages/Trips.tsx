@@ -610,14 +610,14 @@ export default function Trips() {
             ) : (
               filtered.map((t) => {
                 const dep = parseISO(t.departure);
+                const arr = parseISO(t.arrival);
                 return (
                   <TableRow key={t.id} className="group">
-                    <TableCell className="font-medium text-foreground">{t.reference}</TableCell>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="text-sm text-foreground">{t.customer}</span>
+                        <span className="text-sm font-medium text-foreground">{t.customer}</span>
                         <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                          <Users className="h-3 w-3" /> {t.pax} pax
+                          <Users className="h-3 w-3" /> {t.pax} pax · {t.reference}
                         </span>
                       </div>
                     </TableCell>
@@ -636,6 +636,14 @@ export default function Trips() {
                         <span className="text-sm tabular-nums text-foreground">{format(dep, "dd MMM, HH:mm")}</span>
                         <span className="text-xs text-muted-foreground">
                           {formatDistanceToNow(dep, { addSuffix: true })}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="text-sm tabular-nums text-foreground">{format(arr, "dd MMM, HH:mm")}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(arr, { addSuffix: true })}
                         </span>
                       </div>
                     </TableCell>
