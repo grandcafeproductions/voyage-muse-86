@@ -591,11 +591,11 @@ export default function Trips() {
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40">
-              <TableHead>Reference</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Mode</TableHead>
               <TableHead>Route</TableHead>
               <TableHead>Departure</TableHead>
+              <TableHead>Arrival</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
