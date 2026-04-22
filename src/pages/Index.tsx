@@ -14,6 +14,11 @@ import {
   XCircle,
   AlertTriangle,
   Globe,
+  Package,
+  Hotel,
+  BedDouble,
+  CalendarCheck,
+  CalendarClock,
 } from "lucide-react";
 import {
   Area,
