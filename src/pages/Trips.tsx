@@ -617,8 +617,16 @@ export default function Trips() {
               filtered.map((t) => {
                 const dep = parseISO(t.departure);
                 const arr = parseISO(t.arrival);
+                const actualDep = t.actualDeparture ? parseISO(t.actualDeparture) : null;
+                const actualArr = t.actualArrival ? parseISO(t.actualArrival) : null;
+                const rowTint =
+                  t.status === "delayed"
+                    ? "bg-warning/10 hover:bg-warning/15"
+                    : t.status === "cancelled"
+                      ? "bg-destructive/10 hover:bg-destructive/15"
+                      : "";
                 return (
-                  <TableRow key={t.id} className="group">
+                  <TableRow key={t.id} className={cn("group", rowTint)}>
                     <TableCell>
                       <div className="flex flex-col">
                         <span className="text-sm font-medium text-foreground">{t.customer}</span>
@@ -640,17 +648,25 @@ export default function Trips() {
                     <TableCell>
                       <div className="flex flex-col">
                         <span className="text-sm tabular-nums text-foreground">{format(dep, "dd MMM, HH:mm")}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(dep, { addSuffix: true })}
-                        </span>
+                        {actualDep ? (
+                          <span className="text-xs font-medium tabular-nums text-warning">
+                            Actual {format(actualDep, "dd MMM, HH:mm")}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Scheduled</span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
                         <span className="text-sm tabular-nums text-foreground">{format(arr, "dd MMM, HH:mm")}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(arr, { addSuffix: true })}
-                        </span>
+                        {actualArr ? (
+                          <span className="text-xs font-medium tabular-nums text-warning">
+                            Actual {format(actualArr, "dd MMM, HH:mm")}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Scheduled</span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
