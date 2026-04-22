@@ -141,6 +141,8 @@ const SEED: Trip[] = [
     destination: "Reykjavík (KEF)",
     departure: new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString(),
     arrival: new Date(Date.now() + 1000 * 60 * 60 * 9).toISOString(),
+    actualDeparture: new Date(Date.now() + 1000 * 60 * 60 * 6 + 1000 * 60 * 75).toISOString(),
+    actualArrival: new Date(Date.now() + 1000 * 60 * 60 * 9 + 1000 * 60 * 75).toISOString(),
     status: "delayed",
     delayMinutes: 75,
     notes: "Crew rotation pending. Notify customer.",
