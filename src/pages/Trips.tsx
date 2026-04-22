@@ -19,7 +19,7 @@ import {
   Bell,
   Users,
 } from "lucide-react";
-import { format, formatDistanceToNow, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { PageShell } from "@/components/page-shell";
 import { StatCard } from "@/components/stat-card";
@@ -87,6 +87,8 @@ interface Trip {
   destination: string;
   departure: string; // ISO
   arrival: string;
+  actualDeparture?: string; // ISO — actual time when delayed/in-transit
+  actualArrival?: string; // ISO — actual time when delayed/in-transit
   status: TripStatus;
   delayMinutes?: number;
   notes?: string;
@@ -139,6 +141,8 @@ const SEED: Trip[] = [
     destination: "Reykjavík (KEF)",
     departure: new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString(),
     arrival: new Date(Date.now() + 1000 * 60 * 60 * 9).toISOString(),
+    actualDeparture: new Date(Date.now() + 1000 * 60 * 60 * 6 + 1000 * 60 * 75).toISOString(),
+    actualArrival: new Date(Date.now() + 1000 * 60 * 60 * 9 + 1000 * 60 * 75).toISOString(),
     status: "delayed",
     delayMinutes: 75,
     notes: "Crew rotation pending. Notify customer.",
@@ -220,6 +224,8 @@ const SEED: Trip[] = [
     destination: "Copenhagen",
     departure: new Date(Date.now() + 1000 * 60 * 60 * 50).toISOString(),
     arrival: new Date(Date.now() + 1000 * 60 * 60 * 55).toISOString(),
+    actualDeparture: new Date(Date.now() + 1000 * 60 * 60 * 50 + 1000 * 60 * 30).toISOString(),
+    actualArrival: new Date(Date.now() + 1000 * 60 * 60 * 55 + 1000 * 60 * 30).toISOString(),
     status: "delayed",
     delayMinutes: 30,
   },
@@ -611,8 +617,16 @@ export default function Trips() {
               filtered.map((t) => {
                 const dep = parseISO(t.departure);
                 const arr = parseISO(t.arrival);
+                const actualDep = t.actualDeparture ? parseISO(t.actualDeparture) : null;
+                const actualArr = t.actualArrival ? parseISO(t.actualArrival) : null;
+                const rowTint =
+                  t.status === "delayed"
+                    ? "bg-warning/10 hover:bg-warning/15"
+                    : t.status === "cancelled"
+                      ? "bg-destructive/10 hover:bg-destructive/15"
+                      : "";
                 return (
-                  <TableRow key={t.id} className="group">
+                  <TableRow key={t.id} className={cn("group", rowTint)}>
                     <TableCell>
                       <div className="flex flex-col">
                         <span className="text-sm font-medium text-foreground">{t.customer}</span>
@@ -634,17 +648,25 @@ export default function Trips() {
                     <TableCell>
                       <div className="flex flex-col">
                         <span className="text-sm tabular-nums text-foreground">{format(dep, "dd MMM, HH:mm")}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(dep, { addSuffix: true })}
-                        </span>
+                        {actualDep ? (
+                          <span className="text-xs font-medium tabular-nums text-warning">
+                            Actual {format(actualDep, "dd MMM, HH:mm")}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Scheduled</span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
                         <span className="text-sm tabular-nums text-foreground">{format(arr, "dd MMM, HH:mm")}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(arr, { addSuffix: true })}
-                        </span>
+                        {actualArr ? (
+                          <span className="text-xs font-medium tabular-nums text-warning">
+                            Actual {format(actualArr, "dd MMM, HH:mm")}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Scheduled</span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
