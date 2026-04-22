@@ -653,7 +653,9 @@ export default function Trips() {
                             Actual {format(actualDep, "dd MMM, HH:mm")}
                           </span>
                         ) : (
-                          <span className="text-xs text-muted-foreground">Scheduled</span>
+                          <span className="text-xs tabular-nums text-muted-foreground">
+                            {format(dep, "dd MMM yyyy, HH:mm")}
+                          </span>
                         )}
                       </div>
                     </TableCell>
@@ -665,7 +667,9 @@ export default function Trips() {
                             Actual {format(actualArr, "dd MMM, HH:mm")}
                           </span>
                         ) : (
-                          <span className="text-xs text-muted-foreground">Scheduled</span>
+                          <span className="text-xs tabular-nums text-muted-foreground">
+                            {format(arr, "dd MMM yyyy, HH:mm")}
+                          </span>
                         )}
                       </div>
                     </TableCell>
