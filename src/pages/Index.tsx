@@ -36,11 +36,12 @@ import {
   Bar,
 } from "recharts";
 import { PageShell } from "@/components/page-shell";
-import { StatCard } from "@/components/stat-card";
 import { RangeFilter, type RangeKey } from "@/components/range-filter";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import type { LucideIcon } from "lucide-react";
 
 const ordersTrend = [
   { m: "May", total: 8, completed: 6, pending: 1, cancelled: 1 },
@@ -90,6 +91,57 @@ function StatusBadge({ status }: { status: string }) {
     <Badge variant="outline" className={`${map[status] ?? ""} font-medium`}>
       {status}
     </Badge>
+  );
+}
+
+type Tone = "primary" | "success" | "warning" | "destructive" | "info" | "muted" | "accent";
+
+const toneClasses: Record<Tone, string> = {
+  primary: "text-primary bg-primary/10 ring-primary/20",
+  success: "text-success bg-success/10 ring-success/20",
+  warning: "text-warning bg-warning/10 ring-warning/20",
+  destructive: "text-destructive bg-destructive/10 ring-destructive/20",
+  info: "text-info bg-info/10 ring-info/20",
+  muted: "text-muted-foreground bg-muted ring-border",
+  accent: "text-accent bg-accent/10 ring-accent/20",
+};
+
+function MiniRow({
+  icon: Icon,
+  label,
+  value,
+  tone = "muted",
+  compact = false,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: number | string;
+  tone?: Tone;
+  compact?: boolean;
+}) {
+  if (compact) {
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-muted/30 p-2">
+        <div className={cn("flex h-7 w-7 items-center justify-center rounded-md ring-1", toneClasses[tone])}>
+          <Icon className="h-3.5 w-3.5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+          <p className="font-display text-sm font-semibold tabular-nums">{value}</p>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/30 px-3 py-2">
+      <div className="flex items-center gap-2.5">
+        <div className={cn("flex h-7 w-7 items-center justify-center rounded-md ring-1", toneClasses[tone])}>
+          <Icon className="h-3.5 w-3.5" />
+        </div>
+        <span className="text-xs font-medium text-foreground">{label}</span>
+      </div>
+      <span className="font-display text-sm font-semibold tabular-nums">{value}</span>
+    </div>
   );
 }
 
