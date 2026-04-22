@@ -224,6 +224,8 @@ const SEED: Trip[] = [
     destination: "Copenhagen",
     departure: new Date(Date.now() + 1000 * 60 * 60 * 50).toISOString(),
     arrival: new Date(Date.now() + 1000 * 60 * 60 * 55).toISOString(),
+    actualDeparture: new Date(Date.now() + 1000 * 60 * 60 * 50 + 1000 * 60 * 30).toISOString(),
+    actualArrival: new Date(Date.now() + 1000 * 60 * 60 * 55 + 1000 * 60 * 30).toISOString(),
     status: "delayed",
     delayMinutes: 30,
   },
