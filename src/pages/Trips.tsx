@@ -87,6 +87,8 @@ interface Trip {
   destination: string;
   departure: string; // ISO
   arrival: string;
+  actualDeparture?: string; // ISO — actual time when delayed/in-transit
+  actualArrival?: string; // ISO — actual time when delayed/in-transit
   status: TripStatus;
   delayMinutes?: number;
   notes?: string;
