@@ -134,75 +134,152 @@ const Index = () => {
         <RangeFilter value={range} onChange={setRange} />
       </div>
 
-      {/* Orders KPIs */}
-      <section className="mb-8">
-        <div className="mb-3 flex items-center gap-2">
-          <ShoppingBag className="h-4 w-4 text-primary" />
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Orders
-          </h2>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <StatCard label="Total Orders" value={31} hint="All time orders" icon={ShoppingBag} tone="primary" trend={12} />
-          <StatCard label="Pending Orders" value={30} hint="Active work in progress" icon={Clock} tone="warning" trend={4} />
-          <StatCard label="Completed Orders" value={1} hint="Completed and delivered" icon={CheckCircle2} tone="success" trend={-8} />
-        </div>
-      </section>
-
-      {/* Lead Conversion KPIs */}
-      <section className="mb-8">
-        <div className="mb-3 flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-primary" />
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Lead Conversion
-          </h2>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <StatCard label="Total Contacts" value={250} hint="In CRM database" icon={Users} tone="info" trend={6} />
-          <StatCard label="Leads" value={78} hint="Qualified prospects" icon={UserPlus} tone="warning" trend={14} />
-          <StatCard label="Customers" value={34} hint="Converted clients" icon={CheckCircle2} tone="success" trend={9} />
-        </div>
-      </section>
-
-      {/* Trips KPIs with mode tabs */}
-      <section className="mb-8">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Plane className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Trips
-            </h2>
+      {/* Three-column overview: Orders / Lead Conversion / Trips */}
+      <section className="mb-6 grid gap-4 lg:grid-cols-3">
+        {/* Orders column */}
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20">
+                <ShoppingBag className="h-4 w-4" />
+              </div>
+              <h2 className="text-sm font-semibold text-foreground">Orders</h2>
+            </div>
+            <Badge variant="outline" className="text-[10px] font-medium">+12%</Badge>
           </div>
-          <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)}>
-            <TabsList className="rounded-xl bg-card/60 p-1 backdrop-blur">
-              <TabsTrigger value="All" className="rounded-lg text-xs gap-1.5">
-                <Globe className="h-3.5 w-3.5" />
-                All
-              </TabsTrigger>
-              <TabsTrigger value="Flight" className="rounded-lg text-xs gap-1.5">
-                <Plane className="h-3.5 w-3.5" />
-                Flight
-              </TabsTrigger>
-              <TabsTrigger value="Train" className="rounded-lg text-xs gap-1.5">
-                <Train className="h-3.5 w-3.5" />
-                Train
-              </TabsTrigger>
-              <TabsTrigger value="Bus" className="rounded-lg text-xs gap-1.5">
-                <Bus className="h-3.5 w-3.5" />
-                Bus
-              </TabsTrigger>
-              <TabsTrigger value="Other" className="rounded-lg text-xs gap-1.5">
-                <Activity className="h-3.5 w-3.5" />
-                Other
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="mb-4">
+            <p className="font-display text-3xl font-semibold tabular-nums">31</p>
+            <p className="text-xs text-muted-foreground">Total orders</p>
+          </div>
+          <div className="space-y-2">
+            <MiniRow icon={Clock} tone="warning" label="Pending" value={30} />
+            <MiniRow icon={CheckCircle2} tone="success" label="Completed" value={1} />
+            <MiniRow icon={XCircle} tone="destructive" label="Cancelled" value={0} />
+          </div>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Scheduled" value={trips.scheduled} hint="Upcoming bookings" icon={Clock} tone="info" />
-          <StatCard label="Completed" value={trips.completed} hint="Successfully delivered" icon={CheckCircle2} tone="success" />
-          <StatCard label="Cancelled" value={trips.cancelled} hint="Refunded or voided" icon={XCircle} tone="destructive" />
-          <StatCard label="Delayed" value={trips.delayed} hint="Beyond original ETA" icon={AlertTriangle} tone="warning" />
+
+        {/* Lead Conversion column */}
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-info/10 text-info ring-1 ring-info/20">
+                <TrendingUp className="h-4 w-4" />
+              </div>
+              <h2 className="text-sm font-semibold text-foreground">Lead Conversion</h2>
+            </div>
+            <Badge variant="outline" className="text-[10px] font-medium">13.6%</Badge>
+          </div>
+          <div className="mb-4">
+            <p className="font-display text-3xl font-semibold tabular-nums">250</p>
+            <p className="text-xs text-muted-foreground">Total contacts</p>
+          </div>
+          <div className="space-y-2">
+            <MiniRow icon={Users} tone="info" label="Contacts" value={250} />
+            <MiniRow icon={UserPlus} tone="warning" label="Leads" value={78} />
+            <MiniRow icon={CheckCircle2} tone="success" label="Customers" value={34} />
+          </div>
+        </div>
+
+        {/* Trips column */}
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent ring-1 ring-accent/20">
+                <Plane className="h-4 w-4" />
+              </div>
+              <h2 className="text-sm font-semibold text-foreground">Trips</h2>
+            </div>
+            <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)}>
+              <TabsList className="h-7 rounded-lg bg-muted/60 p-0.5">
+                <TabsTrigger value="All" className="h-6 w-6 rounded-md p-0" title="All">
+                  <Globe className="h-3 w-3" />
+                </TabsTrigger>
+                <TabsTrigger value="Flight" className="h-6 w-6 rounded-md p-0" title="Flight">
+                  <Plane className="h-3 w-3" />
+                </TabsTrigger>
+                <TabsTrigger value="Train" className="h-6 w-6 rounded-md p-0" title="Train">
+                  <Train className="h-3 w-3" />
+                </TabsTrigger>
+                <TabsTrigger value="Bus" className="h-6 w-6 rounded-md p-0" title="Bus">
+                  <Bus className="h-3 w-3" />
+                </TabsTrigger>
+                <TabsTrigger value="Other" className="h-6 w-6 rounded-md p-0" title="Other">
+                  <Activity className="h-3 w-3" />
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+          <div className="mb-4">
+            <p className="font-display text-3xl font-semibold tabular-nums">
+              {trips.scheduled + trips.completed + trips.cancelled + trips.delayed}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {mode === "All" ? "All transport modes" : `Mode: ${mode}`}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <MiniRow icon={Clock} tone="info" label="Scheduled" value={trips.scheduled} compact />
+            <MiniRow icon={CheckCircle2} tone="success" label="Completed" value={trips.completed} compact />
+            <MiniRow icon={AlertTriangle} tone="warning" label="Delayed" value={trips.delayed} compact />
+            <MiniRow icon={XCircle} tone="destructive" label="Cancelled" value={trips.cancelled} compact />
+          </div>
+        </div>
+      </section>
+
+      {/* Package & Hotel bookings */}
+      <section className="mb-8 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20">
+                <Package className="h-4 w-4" />
+              </div>
+              <h2 className="text-sm font-semibold text-foreground">Package Bookings</h2>
+            </div>
+            <Badge variant="outline" className="text-[10px] font-medium">+8%</Badge>
+          </div>
+          <div className="mb-4 flex items-end gap-6">
+            <div>
+              <p className="font-display text-3xl font-semibold tabular-nums">42</p>
+              <p className="text-xs text-muted-foreground">Total bookings</p>
+            </div>
+            <div>
+              <p className="font-display text-2xl font-semibold tabular-nums text-success">186</p>
+              <p className="text-xs text-muted-foreground">Total pax</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <MiniRow icon={CalendarCheck} tone="success" label="Confirmed" value={28} compact />
+            <MiniRow icon={Activity} tone="info" label="Ongoing" value={9} compact />
+            <MiniRow icon={CalendarClock} tone="warning" label="Pending" value={5} compact />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent ring-1 ring-accent/20">
+                <Hotel className="h-4 w-4" />
+              </div>
+              <h2 className="text-sm font-semibold text-foreground">Hotel Bookings</h2>
+            </div>
+            <Badge variant="outline" className="text-[10px] font-medium">+15%</Badge>
+          </div>
+          <div className="mb-4 flex items-end gap-6">
+            <div>
+              <p className="font-display text-3xl font-semibold tabular-nums">67</p>
+              <p className="text-xs text-muted-foreground">Total bookings</p>
+            </div>
+            <div>
+              <p className="font-display text-2xl font-semibold tabular-nums text-success">124</p>
+              <p className="text-xs text-muted-foreground">Rooms booked</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <MiniRow icon={CalendarCheck} tone="success" label="Confirmed" value={48} compact />
+            <MiniRow icon={BedDouble} tone="info" label="Checked-in" value={12} compact />
+            <MiniRow icon={CalendarClock} tone="warning" label="Pending" value={7} compact />
+          </div>
         </div>
       </section>
 
