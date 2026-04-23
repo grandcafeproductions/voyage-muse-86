@@ -118,13 +118,34 @@ export function InvoiceFormDialog({ trigger }: { trigger?: React.ReactNode }) {
   const [txnId, setTxnId] = useState("");
   const [useUnallocated, setUseUnallocated] = useState(false);
 
+  // Mock available unallocated balance for this customer
+  const unallocatedAvailable = 25000;
+
   const subtotal = useMemo(
     () => items.reduce((sum, it) => sum + (Number(it.qty) || 0) * (Number(it.rate) || 0), 0),
     [items],
   );
   const taxAmount = useMemo(() => (subtotal - discount) * (taxRate / 100), [subtotal, discount, taxRate]);
   const total = useMemo(() => Math.max(0, subtotal - discount + taxAmount), [subtotal, discount, taxAmount]);
-  const balanceDue = useMemo(() => Math.max(0, total - (recordPayment ? payAmount : 0)), [total, recordPayment, payAmount]);
+
+  // Amount actually deducted from unallocated funds (capped at total)
+  const fundsApplied = useMemo(
+    () => (recordPayment && useUnallocated ? Math.min(unallocatedAvailable, total) : 0),
+    [recordPayment, useUnallocated, total, unallocatedAvailable],
+  );
+  // Remaining due after applying unallocated funds — this is the max for manual payment input
+  const remainingAfterFunds = useMemo(() => Math.max(0, total - fundsApplied), [total, fundsApplied]);
+  // Funds fully cover the invoice — disable manual input
+  const fullyCoveredByFunds = recordPayment && useUnallocated && remainingAfterFunds === 0 && total > 0;
+  // Effective manual payment (clamped)
+  const effectivePayAmount = useMemo(
+    () => (fullyCoveredByFunds ? 0 : Math.min(Math.max(0, payAmount), remainingAfterFunds)),
+    [fullyCoveredByFunds, payAmount, remainingAfterFunds],
+  );
+  const balanceDue = useMemo(
+    () => Math.max(0, total - fundsApplied - effectivePayAmount),
+    [total, fundsApplied, effectivePayAmount],
+  );
 
   const updateItem = (id: string, patch: Partial<LineItem>) =>
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...patch } : it)));
@@ -148,8 +169,9 @@ export function InvoiceFormDialog({ trigger }: { trigger?: React.ReactNode }) {
       toast.error("Each line item needs a description.");
       return;
     }
+    const totalPaid = fundsApplied + effectivePayAmount;
     toast.success(`Invoice ${invoiceNo} created`, {
-      description: `${inr(total)} • ${recordPayment ? `${inr(payAmount)} paid` : "Unpaid"}`,
+      description: `${inr(total)} • ${recordPayment ? `${inr(totalPaid)} paid` : "Unpaid"}`,
     });
     setOpen(false);
   };
@@ -347,7 +369,12 @@ export function InvoiceFormDialog({ trigger }: { trigger?: React.ReactNode }) {
               <Row label="Total" value={inr(total)} bold />
               {recordPayment && (
                 <>
-                  <Row label="Paid now" value={`- ${inr(payAmount)}`} />
+                  {fundsApplied > 0 && (
+                    <Row label="Unallocated funds applied" value={`- ${inr(fundsApplied)}`} />
+                  )}
+                  {effectivePayAmount > 0 && (
+                    <Row label="Paid now" value={`- ${inr(effectivePayAmount)}`} />
+                  )}
                   <Row label="Balance due" value={inr(balanceDue)} bold />
                 </>
               )}
@@ -365,20 +392,62 @@ export function InvoiceFormDialog({ trigger }: { trigger?: React.ReactNode }) {
 
             {recordPayment && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-lg border border-border/60 bg-muted/20 p-4">
+                {/* Unallocated funds toggle — placed first so users can apply credit before entering manual payment */}
+                <label className="sm:col-span-2 flex items-start gap-2 rounded-md bg-background/60 border border-border/60 p-3">
+                  <Checkbox
+                    checked={useUnallocated}
+                    onCheckedChange={(v) => setUseUnallocated(!!v)}
+                    className="mt-0.5"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-sm font-medium">Use unallocated funds</div>
+                      <div className="text-sm font-semibold text-success tabular-nums">
+                        {inr(unallocatedAvailable)}
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Apply existing on-account balance from this customer toward this invoice.
+                    </div>
+                    {useUnallocated && fundsApplied > 0 && (
+                      <div className="mt-2 flex items-center justify-between rounded-md bg-success/10 px-2.5 py-1.5 text-xs">
+                        <span className="text-success font-medium">Deducted from funds</span>
+                        <span className="font-semibold text-success tabular-nums">- {inr(fundsApplied)}</span>
+                      </div>
+                    )}
+                    {useUnallocated && fullyCoveredByFunds && (
+                      <div className="mt-1.5 text-xs text-muted-foreground">
+                        Invoice fully covered by unallocated funds — no additional payment required.
+                      </div>
+                    )}
+                  </div>
+                </label>
+
                 <div className="space-y-2">
-                  <Label htmlFor="pay-amt">Amount</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="pay-amt">Amount</Label>
+                    {!fullyCoveredByFunds && remainingAfterFunds < total && (
+                      <span className="text-xs text-muted-foreground">
+                        Max {inr(remainingAfterFunds)}
+                      </span>
+                    )}
+                  </div>
                   <Input
                     id="pay-amt"
                     type="number"
                     min={0}
-                    max={total}
-                    value={payAmount}
-                    onChange={(e) => setPayAmount(Number(e.target.value))}
+                    max={remainingAfterFunds}
+                    value={fullyCoveredByFunds ? 0 : payAmount}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setPayAmount(Math.min(Math.max(0, v), remainingAfterFunds));
+                    }}
+                    disabled={fullyCoveredByFunds}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Method</Label>
-                  <Select value={payMethod} onValueChange={setPayMethod}>
+                  <Select value={payMethod} onValueChange={setPayMethod} disabled={fullyCoveredByFunds}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Cash">Cash</SelectItem>
@@ -397,24 +466,9 @@ export function InvoiceFormDialog({ trigger }: { trigger?: React.ReactNode }) {
                     onChange={(e) => setTxnId(e.target.value)}
                     placeholder="UPI ref / cheque no / bank txn"
                     maxLength={80}
+                    disabled={fullyCoveredByFunds}
                   />
                 </div>
-                <label className="sm:col-span-2 flex items-start gap-2 rounded-md bg-background/60 border border-border/60 p-3">
-                  <Checkbox
-                    checked={useUnallocated}
-                    onCheckedChange={(v) => setUseUnallocated(!!v)}
-                    className="mt-0.5"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm font-medium">Use unallocated funds</div>
-                      <div className="text-sm font-semibold text-success">{inr(25000)}</div>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Apply existing on-account balance from this customer toward this invoice.
-                    </div>
-                  </div>
-                </label>
               </div>
             )}
           </div>
