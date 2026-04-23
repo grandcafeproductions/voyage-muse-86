@@ -169,8 +169,9 @@ export function InvoiceFormDialog({ trigger }: { trigger?: React.ReactNode }) {
       toast.error("Each line item needs a description.");
       return;
     }
+    const totalPaid = fundsApplied + effectivePayAmount;
     toast.success(`Invoice ${invoiceNo} created`, {
-      description: `${inr(total)} • ${recordPayment ? `${inr(payAmount)} paid` : "Unpaid"}`,
+      description: `${inr(total)} • ${recordPayment ? `${inr(totalPaid)} paid` : "Unpaid"}`,
     });
     setOpen(false);
   };
