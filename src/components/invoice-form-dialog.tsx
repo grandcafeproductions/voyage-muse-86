@@ -405,8 +405,11 @@ export function InvoiceFormDialog({ trigger }: { trigger?: React.ReactNode }) {
                     onCheckedChange={(v) => setUseUnallocated(!!v)}
                     className="mt-0.5"
                   />
-                  <div>
-                    <div className="text-sm font-medium">Use unallocated funds</div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-medium">Use unallocated funds</div>
+                      <div className="text-sm font-semibold text-success">{inr(25000)}</div>
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       Apply existing on-account balance from this customer toward this invoice.
                     </div>
