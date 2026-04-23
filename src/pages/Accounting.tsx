@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { InvoiceFormDialog } from "@/components/invoice-form-dialog";
 
 /* ---------------------------------------------------------------------------
  * Mock data
@@ -251,7 +252,7 @@ export default function Accounting() {
           <SectionCard
             title="Sales invoices"
             subtitle="Customer invoices, payment status, and dues."
-            action={<Button size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> New invoice</Button>}
+            action={<InvoiceFormDialog />}
           >
             <Table>
               <TableHeader>
@@ -299,22 +300,32 @@ export default function Accounting() {
                   <TableHead>Vendor</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                   <TableHead className="text-right">Paid</TableHead>
+                  <TableHead className="text-right">Pending</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPurchases.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-medium text-primary">{p.id}</TableCell>
-                    <TableCell className="text-muted-foreground">{p.date}</TableCell>
-                    <TableCell>{p.vendor}</TableCell>
-                    <TableCell className="text-right font-medium tabular-nums">{inr(p.amount)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{inr(p.paid)}</TableCell>
-                    <TableCell>
-                      <StatusPill className={purchaseStatusTone[p.status]}>{p.status}</StatusPill>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {filteredPurchases.map((p) => {
+                  const pending = Math.max(0, p.amount - p.paid);
+                  return (
+                    <TableRow key={p.id}>
+                      <TableCell className="font-medium text-primary">{p.id}</TableCell>
+                      <TableCell className="text-muted-foreground">{p.date}</TableCell>
+                      <TableCell>{p.vendor}</TableCell>
+                      <TableCell className="text-right font-medium tabular-nums">{inr(p.amount)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{inr(p.paid)}</TableCell>
+                      <TableCell className={cn(
+                        "text-right font-medium tabular-nums",
+                        pending > 0 ? "text-destructive" : "text-muted-foreground"
+                      )}>
+                        {inr(pending)}
+                      </TableCell>
+                      <TableCell>
+                        <StatusPill className={purchaseStatusTone[p.status]}>{p.status}</StatusPill>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </SectionCard>
