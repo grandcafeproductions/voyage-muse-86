@@ -392,20 +392,62 @@ export function InvoiceFormDialog({ trigger }: { trigger?: React.ReactNode }) {
 
             {recordPayment && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-lg border border-border/60 bg-muted/20 p-4">
+                {/* Unallocated funds toggle — placed first so users can apply credit before entering manual payment */}
+                <label className="sm:col-span-2 flex items-start gap-2 rounded-md bg-background/60 border border-border/60 p-3">
+                  <Checkbox
+                    checked={useUnallocated}
+                    onCheckedChange={(v) => setUseUnallocated(!!v)}
+                    className="mt-0.5"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-sm font-medium">Use unallocated funds</div>
+                      <div className="text-sm font-semibold text-success tabular-nums">
+                        {inr(unallocatedAvailable)}
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Apply existing on-account balance from this customer toward this invoice.
+                    </div>
+                    {useUnallocated && fundsApplied > 0 && (
+                      <div className="mt-2 flex items-center justify-between rounded-md bg-success/10 px-2.5 py-1.5 text-xs">
+                        <span className="text-success font-medium">Deducted from funds</span>
+                        <span className="font-semibold text-success tabular-nums">- {inr(fundsApplied)}</span>
+                      </div>
+                    )}
+                    {useUnallocated && fullyCoveredByFunds && (
+                      <div className="mt-1.5 text-xs text-muted-foreground">
+                        Invoice fully covered by unallocated funds — no additional payment required.
+                      </div>
+                    )}
+                  </div>
+                </label>
+
                 <div className="space-y-2">
-                  <Label htmlFor="pay-amt">Amount</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="pay-amt">Amount</Label>
+                    {!fullyCoveredByFunds && remainingAfterFunds < total && (
+                      <span className="text-xs text-muted-foreground">
+                        Max {inr(remainingAfterFunds)}
+                      </span>
+                    )}
+                  </div>
                   <Input
                     id="pay-amt"
                     type="number"
                     min={0}
-                    max={total}
-                    value={payAmount}
-                    onChange={(e) => setPayAmount(Number(e.target.value))}
+                    max={remainingAfterFunds}
+                    value={fullyCoveredByFunds ? 0 : payAmount}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setPayAmount(Math.min(Math.max(0, v), remainingAfterFunds));
+                    }}
+                    disabled={fullyCoveredByFunds}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Method</Label>
-                  <Select value={payMethod} onValueChange={setPayMethod}>
+                  <Select value={payMethod} onValueChange={setPayMethod} disabled={fullyCoveredByFunds}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Cash">Cash</SelectItem>
@@ -424,24 +466,9 @@ export function InvoiceFormDialog({ trigger }: { trigger?: React.ReactNode }) {
                     onChange={(e) => setTxnId(e.target.value)}
                     placeholder="UPI ref / cheque no / bank txn"
                     maxLength={80}
+                    disabled={fullyCoveredByFunds}
                   />
                 </div>
-                <label className="sm:col-span-2 flex items-start gap-2 rounded-md bg-background/60 border border-border/60 p-3">
-                  <Checkbox
-                    checked={useUnallocated}
-                    onCheckedChange={(v) => setUseUnallocated(!!v)}
-                    className="mt-0.5"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm font-medium">Use unallocated funds</div>
-                      <div className="text-sm font-semibold text-success">{inr(25000)}</div>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Apply existing on-account balance from this customer toward this invoice.
-                    </div>
-                  </div>
-                </label>
               </div>
             )}
           </div>
