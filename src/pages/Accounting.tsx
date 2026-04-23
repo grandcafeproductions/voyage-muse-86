@@ -419,7 +419,7 @@ export default function Accounting() {
                           unalloc > 0 ? "font-medium text-warning" : "text-muted-foreground",
                         )}
                       >
-                        {inr(unalloc)}
+                        {!isIn && unalloc === 0 ? "-" : inr(unalloc)}
                       </TableCell>
                       <TableCell>
                         <span className="inline-flex items-center gap-1.5 text-sm">
