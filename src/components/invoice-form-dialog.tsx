@@ -118,13 +118,34 @@ export function InvoiceFormDialog({ trigger }: { trigger?: React.ReactNode }) {
   const [txnId, setTxnId] = useState("");
   const [useUnallocated, setUseUnallocated] = useState(false);
 
+  // Mock available unallocated balance for this customer
+  const unallocatedAvailable = 25000;
+
   const subtotal = useMemo(
     () => items.reduce((sum, it) => sum + (Number(it.qty) || 0) * (Number(it.rate) || 0), 0),
     [items],
   );
   const taxAmount = useMemo(() => (subtotal - discount) * (taxRate / 100), [subtotal, discount, taxRate]);
   const total = useMemo(() => Math.max(0, subtotal - discount + taxAmount), [subtotal, discount, taxAmount]);
-  const balanceDue = useMemo(() => Math.max(0, total - (recordPayment ? payAmount : 0)), [total, recordPayment, payAmount]);
+
+  // Amount actually deducted from unallocated funds (capped at total)
+  const fundsApplied = useMemo(
+    () => (recordPayment && useUnallocated ? Math.min(unallocatedAvailable, total) : 0),
+    [recordPayment, useUnallocated, total, unallocatedAvailable],
+  );
+  // Remaining due after applying unallocated funds — this is the max for manual payment input
+  const remainingAfterFunds = useMemo(() => Math.max(0, total - fundsApplied), [total, fundsApplied]);
+  // Funds fully cover the invoice — disable manual input
+  const fullyCoveredByFunds = recordPayment && useUnallocated && remainingAfterFunds === 0 && total > 0;
+  // Effective manual payment (clamped)
+  const effectivePayAmount = useMemo(
+    () => (fullyCoveredByFunds ? 0 : Math.min(Math.max(0, payAmount), remainingAfterFunds)),
+    [fullyCoveredByFunds, payAmount, remainingAfterFunds],
+  );
+  const balanceDue = useMemo(
+    () => Math.max(0, total - fundsApplied - effectivePayAmount),
+    [total, fundsApplied, effectivePayAmount],
+  );
 
   const updateItem = (id: string, patch: Partial<LineItem>) =>
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...patch } : it)));
