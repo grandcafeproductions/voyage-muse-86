@@ -369,7 +369,12 @@ export function InvoiceFormDialog({ trigger }: { trigger?: React.ReactNode }) {
               <Row label="Total" value={inr(total)} bold />
               {recordPayment && (
                 <>
-                  <Row label="Paid now" value={`- ${inr(payAmount)}`} />
+                  {fundsApplied > 0 && (
+                    <Row label="Unallocated funds applied" value={`- ${inr(fundsApplied)}`} />
+                  )}
+                  {effectivePayAmount > 0 && (
+                    <Row label="Paid now" value={`- ${inr(effectivePayAmount)}`} />
+                  )}
                   <Row label="Balance due" value={inr(balanceDue)} bold />
                 </>
               )}
