@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound.tsx";
 import Trips from "./pages/Trips.tsx";
 import PackageBookings from "./pages/PackageBookings.tsx";
 import HotelBookings from "./pages/HotelBookings.tsx";
+import VisaApplications from "./pages/VisaApplications.tsx";
 import Leads from "./pages/Leads.tsx";
 import Customers from "./pages/Customers.tsx";
 import Orders from "./pages/Orders.tsx";
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="/trips" element={<Trips />} />
               <Route path="/package-bookings" element={<PackageBookings />} />
               <Route path="/hotel-bookings" element={<HotelBookings />} />
+              <Route path="/visa-applications" element={<VisaApplications />} />
               <Route path="/leads" element={<Leads />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/orders" element={<Orders />} />
