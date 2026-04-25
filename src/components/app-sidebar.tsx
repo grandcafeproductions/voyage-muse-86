@@ -8,6 +8,7 @@ import {
   Wallet,
   Package,
   Hotel,
+  FileCheck,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -28,6 +29,7 @@ const items = [
   { title: "Trips", url: "/trips", icon: Plane },
   { title: "Package Bookings", url: "/package-bookings", icon: Package },
   { title: "Hotel Bookings", url: "/hotel-bookings", icon: Hotel },
+  { title: "Visa Applications", url: "/visa-applications", icon: FileCheck },
   { title: "Leads", url: "/leads", icon: UserPlus },
   { title: "Customers", url: "/customers", icon: Users },
   { title: "Orders", url: "/orders", icon: ShoppingBag },
