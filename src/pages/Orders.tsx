@@ -561,18 +561,20 @@ function OrderDetailsSheet({
 
           {/* Shipping */}
           <Section title="Shipping Address">
-            <div className="flex items-start gap-2 text-sm">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              <span>{order.shippingAddress}</span>
-            </div>
-            <div className="mt-3 overflow-hidden rounded-lg border border-border">
-              <iframe
-                title="Shipping location"
-                aria-label={`Map of ${order.shippingAddress}`}
-                className="h-44 w-full"
-                loading="lazy"
-                src={`https://www.google.com/maps?q=${encodeURIComponent(order.shippingAddress)}&output=embed`}
-              />
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="flex items-start gap-2 text-sm">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <span>{order.shippingAddress}</span>
+              </div>
+              <div className="overflow-hidden rounded-lg border border-border">
+                <iframe
+                  title="Shipping location"
+                  aria-label={`Map of ${order.shippingAddress}`}
+                  className="h-44 w-full"
+                  loading="lazy"
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(order.shippingAddress)}&output=embed`}
+                />
+              </div>
             </div>
           </Section>
 
