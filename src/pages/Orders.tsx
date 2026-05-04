@@ -103,10 +103,10 @@ const seed: Order[] = [
       company: "Mehta Trading Co.",
       phone: "+91 98200 11223",
       email: "aarav@mehtatrading.in",
-      address: "B-204, Sunrise Heights, Andheri West, Mumbai 400058",
+      address: "B-204, 2nd Floor, Sunrise Heights, Lokhandwala Complex, Andheri West, Mumbai, Maharashtra 400058",
       gstn: "27AABCM1234L1Z5",
     },
-    shippingAddress: "B-204, Sunrise Heights, Andheri West, Mumbai, Maharashtra 400058, India",
+    shippingAddress: "B-204, 2nd Floor, Sunrise Heights, Lokhandwala Complex, Andheri West, Mumbai, Maharashtra 400058, India",
     shippingAvailable: true,
     status: "processing",
     items: [
@@ -123,9 +123,9 @@ const seed: Order[] = [
       name: "Sara Wilson",
       phone: "+1 415 555 0132",
       email: "sara.w@example.com",
-      address: "1450 Market St, San Francisco, CA 94103",
+      address: "1450 Market Street, Apt 12B, Civic Center, San Francisco, CA 94103, USA",
     },
-    shippingAddress: "1450 Market St, Apt 12B, San Francisco, CA 94103, USA",
+    shippingAddress: "1450 Market Street, Apt 12B, Civic Center, San Francisco, CA 94103, USA",
     shippingAvailable: true,
     status: "shipped",
     items: [
@@ -143,10 +143,10 @@ const seed: Order[] = [
       company: "Singh Enterprises",
       phone: "+91 99100 44556",
       email: "rahul@singhent.com",
-      address: "Plot 12, Sector 44, Gurugram 122003",
+      address: "Plot 12, 3rd Floor, Tower B, Cyber Greens, Sector 44, Gurugram, Haryana 122003",
       gstn: "06AAACS9988P1ZQ",
     },
-    shippingAddress: "Plot 12, Sector 44, Gurugram, Haryana 122003, India",
+    shippingAddress: "Plot 12, 3rd Floor, Tower B, Cyber Greens, Sector 44, Gurugram, Haryana 122003, India",
     shippingAvailable: true,
     status: "pending",
     items: [
@@ -162,9 +162,9 @@ const seed: Order[] = [
       name: "Maya Chen",
       phone: "+65 8123 4477",
       email: "maya.chen@example.sg",
-      address: "88 Orchard Rd, Singapore 238888",
+      address: "88 Orchard Road, #14-09, Paragon Tower, Orchard, Singapore 238888",
     },
-    shippingAddress: "88 Orchard Rd, #14-09, Singapore 238888",
+    shippingAddress: "88 Orchard Road, #14-09, Paragon Tower, Orchard, Singapore 238888",
     shippingAvailable: false,
     status: "delivered",
     items: [
@@ -180,9 +180,9 @@ const seed: Order[] = [
       name: "David Park",
       phone: "+61 412 998 100",
       email: "dpark@example.au",
-      address: "21 George St, Sydney NSW 2000",
+      address: "21 George Street, Level 5, Quay Quarter, Sydney CBD, Sydney NSW 2000, Australia",
     },
-    shippingAddress: "21 George St, Sydney NSW 2000, Australia",
+    shippingAddress: "21 George Street, Level 5, Quay Quarter, Sydney CBD, Sydney NSW 2000, Australia",
     shippingAvailable: true,
     status: "cancelled",
     items: [
@@ -199,10 +199,10 @@ const seed: Order[] = [
       company: "Nair Holidays",
       phone: "+91 90400 22113",
       email: "priya@nairholidays.in",
-      address: "MG Road, Kochi 682016",
+      address: "1st Floor, Samuel Sons Building, Sobha Road, Chakkaraparambu, Palarivattom, Kochi, Ernakulam, Kerala 682028",
       gstn: "32AAFCN5566K1Z2",
     },
-    shippingAddress: "MG Road, Kochi, Kerala 682016, India",
+    shippingAddress: "1st Floor, Samuel Sons Building, Sobha Road, Chakkaraparambu, Palarivattom, Kochi, Ernakulam, Kerala 682028, India",
     shippingAvailable: true,
     status: "processing",
     items: [
@@ -452,7 +452,7 @@ function OrderDetailsSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full overflow-y-auto p-0 sm:max-w-2xl"
+        className="w-[60vw] !max-w-none overflow-y-auto p-0 sm:!max-w-none"
       >
         <SheetHeader className="sticky top-0 z-10 border-b border-border bg-background/95 px-6 py-4 backdrop-blur">
           <div className="flex items-start justify-between gap-4">
