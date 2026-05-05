@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { MoreVertical, Plus, Truck, Search, Printer, Bell, Pencil, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { MoreVertical, Plus, Truck, Search, Printer, Bell, Pencil, Trash2, Settings } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -75,6 +77,7 @@ export default function Shipping() {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Partial<Shipment>>({ status: "Pending" });
+  const navigate = useNavigate();
 
   const filtered = shipments.filter(
     (s) =>
@@ -155,6 +158,23 @@ export default function Shipping() {
         </Dialog>
       }
     >
+      <Tabs
+        value="orders"
+        onValueChange={(v) => {
+          if (v === "setup") navigate("/shipping/setup");
+        }}
+        className="mb-4"
+      >
+        <TabsList>
+          <TabsTrigger value="orders">
+            <Truck className="mr-2 h-4 w-4" /> Shipping Orders
+          </TabsTrigger>
+          <TabsTrigger value="setup">
+            <Settings className="mr-2 h-4 w-4" /> Setup Shipping
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       <div className="mb-4 flex items-center gap-2">
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
