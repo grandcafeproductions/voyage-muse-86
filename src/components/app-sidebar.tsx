@@ -1,14 +1,13 @@
 import {
   LayoutDashboard,
-  Plane,
   UserPlus,
   Users,
   ShoppingBag,
-  CheckSquare,
   Wallet,
   Package,
-  Hotel,
-  FileCheck,
+  Plane,
+  Truck,
+  ShoppingCart,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -26,14 +25,11 @@ import {
 
 const items = [
   { title: "Overview", url: "/", icon: LayoutDashboard },
-  { title: "Trips", url: "/trips", icon: Plane },
-  { title: "Package Bookings", url: "/package-bookings", icon: Package },
-  { title: "Hotel Bookings", url: "/hotel-bookings", icon: Hotel },
-  { title: "Visa Applications", url: "/visa-applications", icon: FileCheck },
   { title: "Leads", url: "/leads", icon: UserPlus },
   { title: "Customers", url: "/customers", icon: Users },
   { title: "Orders", url: "/orders", icon: ShoppingBag },
-  { title: "Tasks", url: "/tasks", icon: CheckSquare },
+  { title: "Shipping", url: "/shipping", icon: Truck },
+  { title: "Abandoned Carts", url: "/abandoned-carts", icon: ShoppingCart },
   { title: "Accounting & Finance", url: "/accounting", icon: Wallet },
   { title: "Services & Packages", url: "/services", icon: Package },
 ];
