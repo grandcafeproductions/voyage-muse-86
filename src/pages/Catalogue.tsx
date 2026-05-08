@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, BookOpen, FolderTree, MoreHorizontal, Eye, Pencil, Copy, Power, Trash2, Tags, Image as ImageIcon } from "lucide-react";
+import { Plus, BookOpen, FolderTree, MoreHorizontal, Eye, Pencil, Copy, Power, Trash2, Tags, Image as ImageIcon, Package2, Store, AlertTriangle, MinusCircle } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -39,44 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-
-export type CatalogueItem = {
-  id: string;
-  name: string;
-  type: "Service" | "Product";
-  image: string;
-  domain: string;
-  route: string;
-  status: "Active" | "Draft" | "Archived";
-  position: number;
-  productCount: number;
-};
-
-export type GroupItem = {
-  id: string;
-  name: string;
-  catalogue: string;
-  position: number;
-  status: "Active" | "Draft";
-  productCount: number;
-};
-
-export const sampleCatalogues: CatalogueItem[] = [
-  { id: "CAT-001", name: "Electronics", type: "Product", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=200", domain: "shop.voyager.com", route: "/electronics", status: "Active", position: 1, productCount: 24 },
-  { id: "CAT-002", name: "Fashion & Apparel", type: "Product", image: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=200", domain: "shop.voyager.com", route: "/fashion", status: "Active", position: 2, productCount: 56 },
-  { id: "CAT-003", name: "Travel Packages", type: "Service", image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=200", domain: "voyager.com", route: "/travel", status: "Active", position: 3, productCount: 12 },
-  { id: "CAT-004", name: "Home & Kitchen", type: "Product", image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200", domain: "shop.voyager.com", route: "/home", status: "Draft", position: 4, productCount: 18 },
-  { id: "CAT-005", name: "Visa Consulting", type: "Service", image: "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?w=200", domain: "voyager.com", route: "/visa", status: "Active", position: 5, productCount: 8 },
-];
-
-export const sampleGroups: GroupItem[] = [
-  { id: "GRP-001", name: "Smartphones", catalogue: "Electronics", position: 1, status: "Active", productCount: 12 },
-  { id: "GRP-002", name: "Laptops", catalogue: "Electronics", position: 2, status: "Active", productCount: 8 },
-  { id: "GRP-003", name: "Men's Wear", catalogue: "Fashion & Apparel", position: 1, status: "Active", productCount: 22 },
-  { id: "GRP-004", name: "Women's Wear", catalogue: "Fashion & Apparel", position: 2, status: "Active", productCount: 30 },
-  { id: "GRP-005", name: "Beach Holidays", catalogue: "Travel Packages", position: 1, status: "Active", productCount: 6 },
-  { id: "GRP-006", name: "Cookware", catalogue: "Home & Kitchen", position: 1, status: "Draft", productCount: 9 },
-];
+import { sampleCatalogues, sampleGroups, sampleProducts } from "@/data/catalogue-data";
 
 export default function Catalogue() {
   const navigate = useNavigate();
@@ -108,6 +71,22 @@ export default function Catalogue() {
     toast.success("Category added");
   };
 
+  const overview = useMemo(() => {
+    const totalProducts = sampleProducts.length;
+    const services = sampleCatalogues.filter((catalogue) => catalogue.type === "Service").length;
+    const outOfStock = sampleProducts.filter((product) => product.stock === 0 || product.status === "Out of Stock").length;
+    const lowStock = sampleProducts.filter((product) => product.stock > 0 && product.stock <= 10).length;
+    const inactive = sampleCatalogues.filter((catalogue) => catalogue.status !== "Active").length + sampleProducts.filter((product) => product.status === "Draft").length;
+
+    return [
+      { label: "Total products", value: totalProducts, icon: Package2, tone: "text-cyan-400" },
+      { label: "Services", value: services, icon: Store, tone: "text-emerald-400" },
+      { label: "Out of stock", value: outOfStock, icon: AlertTriangle, tone: "text-rose-400" },
+      { label: "Low stock", value: lowStock, icon: MinusCircle, tone: "text-amber-400" },
+      { label: "Inactive", value: inactive, icon: Power, tone: "text-slate-400" },
+    ];
+  }, []);
+
   return (
     <PageShell
       title="Catalogue"
@@ -128,8 +107,27 @@ export default function Catalogue() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      }
+        }
     >
+      <div className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        {overview.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Card key={item.label} className="border-border/60 bg-card/90 p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-sm text-muted-foreground">{item.label}</div>
+                  <div className="mt-2 text-3xl font-semibold tracking-tight">{item.value}</div>
+                </div>
+                <div className={`rounded-full border border-border/60 p-2 ${item.tone}`}>
+                  <Icon className="h-4 w-4" />
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
       <Tabs defaultValue="catalogues">
         <TabsList>
           <TabsTrigger value="catalogues">Catalogues</TabsTrigger>
