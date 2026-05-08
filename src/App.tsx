@@ -15,6 +15,7 @@ import ShippingSetup from "./pages/ShippingSetup.tsx";
 import AbandonedCarts from "./pages/AbandonedCarts.tsx";
 import Catalogue from "./pages/Catalogue.tsx";
 import CatalogueDetail from "./pages/CatalogueDetail.tsx";
+import PromotionsOffers from "./pages/PromotionsOffers.tsx";
 import Accounting from "./pages/Accounting.tsx";
 import Services from "./pages/Services.tsx";
 
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/abandoned-carts" element={<AbandonedCarts />} />
               <Route path="/catalogue" element={<Catalogue />} />
               <Route path="/catalogue/:type/:id" element={<CatalogueDetail />} />
+              <Route path="/promotions-offers" element={<PromotionsOffers />} />
               <Route path="/accounting" element={<Accounting />} />
               <Route path="/services" element={<Services />} />
             </Route>

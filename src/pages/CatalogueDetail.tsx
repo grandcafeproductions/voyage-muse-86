@@ -1,12 +1,14 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ElementType } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, MoreHorizontal, Eye, Pencil, Copy, Power, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, MoreHorizontal, Eye, Pencil, Copy, Power, Trash2, CheckCircle2, Sparkles, Shirt, Image as ImageIcon, Boxes, DollarSign, Truck, ShieldCheck, Search, Globe, EyeOff, CalendarDays } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -21,6 +23,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { sampleCatalogues, sampleGroups } from "./Catalogue";
 
 type Product = {
@@ -58,6 +75,7 @@ export default function CatalogueDetail() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  const [productOpen, setProductOpen] = useState(false);
 
   const isCatalogue = type === "catalogue";
   const cat = isCatalogue ? sampleCatalogues.find((c) => c.id === id) : null;
@@ -114,7 +132,7 @@ export default function CatalogueDetail() {
           <Button variant="outline" onClick={() => navigate("/catalogue")}>
             <ArrowLeft className="h-4 w-4" /> Back
           </Button>
-          <Button>
+          <Button onClick={() => setProductOpen(true)}>
             <Plus className="h-4 w-4" /> Add Product
           </Button>
         </div>
@@ -260,6 +278,492 @@ export default function CatalogueDetail() {
           </TableBody>
         </Table>
       </Card>
+
+      <Sheet open={productOpen} onOpenChange={setProductOpen}>
+        <SheetContent side="right" className="w-full max-w-[72rem] overflow-y-auto p-0">
+          <div className="grid min-h-full grid-rows-[auto,1fr,auto] bg-background lg:grid-cols-[18rem_minmax(0,1fr)] lg:grid-rows-[auto,1fr,auto]">
+            <SheetHeader className="border-b border-border/60 px-6 py-5 text-left lg:col-span-2">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-[0.24em] text-muted-foreground">
+                <Sparkles className="h-4 w-4" />
+                Product Builder
+              </div>
+              <SheetTitle className="mt-2 text-2xl">Add Product</SheetTitle>
+              <SheetDescription className="max-w-2xl">
+                Create a product with catalog, pricing, inventory, tax, and publishing settings.
+              </SheetDescription>
+            </SheetHeader>
+
+            <aside className="border-b border-border/60 bg-muted/25 px-6 py-6 lg:border-r lg:border-b-0">
+              <div className="sticky top-6 space-y-5">
+                <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-sm">
+                      <Shirt className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold">Product draft</div>
+                      <div className="text-xs text-muted-foreground">Use the sections on the right to build the item.</div>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+                    <StatPill icon={CheckCircle2} label="Core fields" value="Required" />
+                    <StatPill icon={Boxes} label="Inventory" value="Ready" />
+                    <StatPill icon={DollarSign} label="Pricing" value="Auto" />
+                    <StatPill icon={Truck} label="Shipping" value="Physical" />
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                  <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Sections
+                  </div>
+                  <div className="space-y-1">
+                    {sectionNav.map((item) => (
+                      <div key={item.label} className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm hover:bg-muted">
+                        <item.icon className="h-4 w-4 text-muted-foreground" />
+                        <span className="flex-1">{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-dashed border-border/70 bg-card/60 p-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 font-medium text-foreground">
+                    <Search className="h-4 w-4" />
+                    Design note
+                  </div>
+                  <p className="mt-2">
+                    The form now behaves like a workspace: summary on the left, fields on the right, and larger sections spanning the full width when needed.
+                  </p>
+                </div>
+              </div>
+            </aside>
+
+            <div className="space-y-6 overflow-y-auto px-6 py-6">
+              <div className="grid gap-6 xl:grid-cols-2">
+                <section className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                  <div className="mb-4 flex items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-base font-semibold">1. Basic Information</h3>
+                      <p className="text-sm text-muted-foreground">Product details and taxonomy</p>
+                    </div>
+                    <Badge variant="secondary" className="rounded-full px-3 py-1">Required</Badge>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Product Name *" required>
+                      <Input placeholder="Enter product name" />
+                    </Field>
+                    <Field label="Product Slug">
+                      <Input placeholder="product-slug" />
+                    </Field>
+                    <Field label="Product Type">
+                      <Select defaultValue="physical">
+                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="physical">Physical</SelectItem>
+                          <SelectItem value="digital">Digital</SelectItem>
+                          <SelectItem value="service">Service</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field label="Brand">
+                      <Input placeholder="Brand name" />
+                    </Field>
+                    <Field label="Category *" required>
+                      <Select>
+                        <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                        <SelectContent>
+                          {categoryOptions.map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field label="Sub Category">
+                      <Input placeholder="Sub category" />
+                    </Field>
+                    <Field label="Product Code (Master Code)" className="md:col-span-2">
+                      <Input placeholder="MASTER-001" />
+                    </Field>
+                    <Field label="Description *" className="md:col-span-2" required>
+                      <Textarea rows={4} placeholder="Product description" />
+                    </Field>
+                    <Field label="Short Description" className="md:col-span-2">
+                      <Textarea rows={3} placeholder="Short summary" />
+                    </Field>
+                    <Field label="Tags">
+                      <Input placeholder="tag1, tag2, tag3" />
+                    </Field>
+                    <Field label="Key Highlights">
+                      <Input placeholder="Highlight 1, Highlight 2" />
+                    </Field>
+                  </div>
+                </section>
+
+                <section className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                  <div className="mb-4 flex items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-base font-semibold">2. Media</h3>
+                      <p className="text-sm text-muted-foreground">Images and video</p>
+                    </div>
+                    <Badge variant="outline" className="rounded-full px-3 py-1">Visual</Badge>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Featured Image *" required>
+                      <Input type="file" accept="image/*" />
+                    </Field>
+                    <Field label="Gallery Images">
+                      <Input type="file" accept="image/*" multiple />
+                    </Field>
+                    <Field label="Variant Images">
+                      <Input type="file" accept="image/*" multiple />
+                    </Field>
+                    <Field label="Product Video URL">
+                      <Input placeholder="https://youtube.com/..." />
+                    </Field>
+                  </div>
+                </section>
+              </div>
+
+              <div className="grid gap-6 xl:grid-cols-2">
+                <section className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                  <h3 className="text-base font-semibold">3. Product Configuration</h3>
+                  <p className="mb-4 text-sm text-muted-foreground">Options and behavior</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <ToggleField label="Has Variants" />
+                    <ToggleField label="Requires Shipping" defaultChecked />
+                    <ToggleField label="Taxable" defaultChecked />
+                    <ToggleField label="Track Inventory" defaultChecked />
+                    <ToggleField label="Returnable" />
+                  </div>
+                </section>
+
+                <section className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                  <h3 className="text-base font-semibold">4. Pricing</h3>
+                  <p className="mb-4 text-sm text-muted-foreground">For non-variant products</p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="SKU *" required>
+                      <Input placeholder="SKU-001" />
+                    </Field>
+                    <Field label="MRP / Regular Price *" required>
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Selling Price">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Discount % (Auto)">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Cost Price">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Profit Margin (Auto)">
+                      <Input placeholder="Selling Price - Cost Price" disabled />
+                    </Field>
+                  </div>
+                </section>
+              </div>
+
+              <div className="grid gap-6 xl:grid-cols-2">
+                <section className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                  <h3 className="text-base font-semibold">5. Inventory</h3>
+                  <p className="mb-4 text-sm text-muted-foreground">Stock and availability</p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Current Stock">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Minimum Stock Alert">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Maximum Purchase Quantity">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Unit">
+                      <Select defaultValue="piece">
+                        <SelectTrigger><SelectValue placeholder="Select unit" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="piece">Piece</SelectItem>
+                          <SelectItem value="kg">Kg</SelectItem>
+                          <SelectItem value="gram">Gram</SelectItem>
+                          <SelectItem value="liter">Liter</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field label="Status" className="md:col-span-2">
+                      <Select defaultValue="in-stock">
+                        <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="in-stock">In Stock</SelectItem>
+                          <SelectItem value="out-of-stock">Out of Stock</SelectItem>
+                          <SelectItem value="preorder">Preorder</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  </div>
+                </section>
+
+                <section className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                  <h3 className="text-base font-semibold">6. Shipping Details</h3>
+                  <p className="mb-4 text-sm text-muted-foreground">Dimensions and delivery controls</p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Weight">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Shipping Class">
+                      <Input placeholder="Standard / Express" />
+                    </Field>
+                    <Field label="Length">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Width">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Height">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <div className="space-y-2">
+                      <Label>Shipping Settings</Label>
+                      <ToggleField label="Free Shipping Eligible" />
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <div className="grid gap-6 xl:grid-cols-2">
+                <section className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                  <h3 className="text-base font-semibold">7. Tax Settings</h3>
+                  <p className="mb-4 text-sm text-muted-foreground">Tax information</p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Tax Rate %">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="HSN Code">
+                      <Input placeholder="HSN" />
+                    </Field>
+                    <Field label="GST Type">
+                      <Select defaultValue="exclusive">
+                        <SelectTrigger><SelectValue placeholder="Select GST type" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="inclusive">Inclusive</SelectItem>
+                          <SelectItem value="exclusive">Exclusive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  </div>
+                </section>
+
+                <section className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                  <h3 className="text-base font-semibold">9. SEO Settings</h3>
+                  <p className="mb-4 text-sm text-muted-foreground">Search and sharing</p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Meta Title">
+                      <Input placeholder="SEO title" />
+                    </Field>
+                    <Field label="Meta Description">
+                      <Textarea rows={3} placeholder="SEO description" />
+                    </Field>
+                    <Field label="Meta Keywords">
+                      <Input placeholder="keyword, keyword" />
+                    </Field>
+                    <Field label="Open Graph Image">
+                      <Input type="file" accept="image/*" />
+                    </Field>
+                  </div>
+                </section>
+              </div>
+
+              <section className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                <h3 className="text-base font-semibold">8. Product Variants</h3>
+                <p className="mb-4 text-sm text-muted-foreground">Variant groups and child SKU setup</p>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Variant Title">
+                    <Input placeholder="Color / Size / Material" />
+                  </Field>
+                  <Field label="Variant Attributes">
+                    <Input placeholder="Red / M, Red / L, Black / M" />
+                  </Field>
+                  <Field label="Example Variants" className="md:col-span-2">
+                    <Textarea
+                      rows={3}
+                      placeholder={"Red / M\nRed / L\nBlack / M"}
+                    />
+                  </Field>
+                </div>
+                <div className="mt-4 rounded-2xl border border-dashed border-border/70 bg-muted/20 p-4">
+                  <div className="mb-4 flex items-center gap-2 text-sm font-semibold">
+                    <Boxes className="h-4 w-4" />
+                    Each Variant Contains
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Variant Name">
+                      <Input placeholder="Variant name" />
+                    </Field>
+                    <Field label="Variant SKU *" required>
+                      <Input placeholder="VAR-001" />
+                    </Field>
+                    <Field label="Barcode">
+                      <Input placeholder="Barcode" />
+                    </Field>
+                    <Field label="Variant Images">
+                      <Input type="file" multiple accept="image/*" />
+                    </Field>
+                    <Field label="MRP">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Selling Price">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Discount %">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Stock Quantity">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Low Stock Alert">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Weight">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Length">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Width">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Height">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="Tax Rate">
+                      <Input type="number" placeholder="0" />
+                    </Field>
+                    <Field label="HSN Code">
+                      <Input placeholder="HSN" />
+                    </Field>
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                <h3 className="text-base font-semibold">10. Visibility & Publishing</h3>
+                <p className="mb-4 text-sm text-muted-foreground">Publication controls</p>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Product Status">
+                    <Select defaultValue="draft">
+                      <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="published">Published</SelectItem>
+                        <SelectItem value="archived">Archived</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field label="Visibility">
+                    <Select defaultValue="public">
+                      <SelectTrigger><SelectValue placeholder="Select visibility" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="public">Public</SelectItem>
+                        <SelectItem value="private">Private</SelectItem>
+                        <SelectItem value="hidden">Hidden</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <ToggleField label="Featured Product" />
+                  <Field label="Publish Schedule">
+                    <Input type="datetime-local" />
+                  </Field>
+                </div>
+              </section>
+            </div>
+
+            <SheetFooter className="border-t border-border/60 px-6 py-4 lg:col-span-2">
+              <div className="flex flex-wrap items-center justify-between gap-3 w-full">
+                <div className="text-sm text-muted-foreground">
+                  Use Save Product when the core fields are ready. You can refine variants later.
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" onClick={() => setProductOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={() => setProductOpen(false)}>Save Product</Button>
+                </div>
+              </div>
+            </SheetFooter>
+          </div>
+        </SheetContent>
+      </Sheet>
     </PageShell>
+  );
+}
+
+function Field({
+  label,
+  children,
+  className,
+  required,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+  required?: boolean;
+}) {
+  return (
+    <div className={`space-y-2 ${className ?? ""}`}>
+      <Label>
+        {label}
+        {required ? " *" : ""}
+      </Label>
+      {children}
+    </div>
+  );
+}
+
+function ToggleField({
+  label,
+  defaultChecked = false,
+}: {
+  label: string;
+  defaultChecked?: boolean;
+}) {
+  return (
+    <label className="flex items-center gap-3 rounded-lg border border-border/60 px-3 py-2.5">
+      <Checkbox defaultChecked={defaultChecked} />
+      <span className="text-sm font-medium">{label}</span>
+    </label>
+  );
+}
+
+const sectionNav = [
+  { label: "Basic Information", icon: Globe },
+  { label: "Media", icon: ImageIcon },
+  { label: "Configuration", icon: CheckCircle2 },
+  { label: "Pricing", icon: DollarSign },
+  { label: "Inventory", icon: Boxes },
+  { label: "Shipping", icon: Truck },
+  { label: "Tax", icon: ShieldCheck },
+  { label: "Variants", icon: Search },
+  { label: "SEO", icon: EyeOff },
+  { label: "Publishing", icon: CalendarDays },
+];
+
+function StatPill({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: ElementType;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
+      <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+        <Icon className="h-3.5 w-3.5" />
+        {label}
+      </div>
+      <div className="mt-1 text-sm font-semibold">{value}</div>
+    </div>
   );
 }

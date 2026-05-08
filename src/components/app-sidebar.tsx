@@ -8,6 +8,7 @@ import {
   Truck,
   ShoppingCart,
   BookOpen,
+  Megaphone,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -31,6 +32,7 @@ const items = [
   { title: "Shipping", url: "/shipping", icon: Truck },
   { title: "Abandoned Carts", url: "/abandoned-carts", icon: ShoppingCart },
   { title: "Catalogue", url: "/catalogue", icon: BookOpen },
+  { title: "Promotions & Offers", url: "/promotions-offers", icon: Megaphone },
   { title: "Accounting & Finance", url: "/accounting", icon: Wallet },
 ];
 
