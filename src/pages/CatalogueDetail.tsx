@@ -76,6 +76,11 @@ export default function CatalogueDetail() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [productOpen, setProductOpen] = useState(false);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [offerOpen, setOfferOpen] = useState(false);
+  const [offerType, setOfferType] = useState<"bogo" | "discount" | null>(null);
+  const [offerPercent, setOfferPercent] = useState("");
+  const [offerRule, setOfferRule] = useState("buy1get1");
 
   const isCatalogue = type === "catalogue";
   const cat = isCatalogue ? sampleCatalogues.find((c) => c.id === id) : null;
@@ -122,6 +127,48 @@ export default function CatalogueDetail() {
       return matchesSearch && matchesCategory && matchesStatus && matchesMin && matchesMax;
     });
   }, [categoryFilter, maxPrice, minPrice, scopedProducts, search, statusFilter]);
+
+  const selectedCount = selectedProductIds.length;
+  const allVisibleSelected = products.length > 0 && products.every((product) => selectedProductIds.includes(product.id));
+  const someVisibleSelected = products.some((product) => selectedProductIds.includes(product.id)) && !allVisibleSelected;
+
+  const toggleProductSelection = (productId: string, checked: boolean) => {
+    setSelectedProductIds((prev) => {
+      if (checked) {
+        return prev.includes(productId) ? prev : [...prev, productId];
+      }
+      return prev.filter((id) => id !== productId);
+    });
+  };
+
+  const toggleAllVisible = (checked: boolean) => {
+    setSelectedProductIds((prev) => {
+      if (checked) {
+        const merged = new Set(prev);
+        products.forEach((product) => merged.add(product.id));
+        return Array.from(merged);
+      }
+      const visibleIds = new Set(products.map((product) => product.id));
+      return prev.filter((productId) => !visibleIds.has(productId));
+    });
+  };
+
+  const clearSelectedProducts = () => setSelectedProductIds([]);
+
+  const bulkDeleteProducts = () => {
+    if (selectedCount === 0) return;
+    setSelectedProductIds([]);
+  };
+
+  const bulkApplyOffer = () => {
+    if (selectedCount === 0) return;
+    setOfferType(null);
+    setOfferOpen(true);
+  };
+
+  const bulkUpdateStatus = (nextStatus: "Active" | "Draft" | "Out of Stock") => {
+    if (selectedCount === 0) return;
+  };
 
   return (
     <PageShell
@@ -202,9 +249,46 @@ export default function CatalogueDetail() {
       </Card>
 
       <Card className="p-0 overflow-hidden">
+        {selectedCount > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 bg-muted/30 px-4 py-3">
+            <div className="text-sm">
+              <span className="font-semibold">{selectedCount}</span> product{selectedCount === 1 ? "" : "s"} selected
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="destructive" size="sm" onClick={bulkDeleteProducts}>
+                Delete
+              </Button>
+              <Button variant="outline" size="sm" onClick={bulkApplyOffer}>
+                Apply Offer
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    Update Status
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => bulkUpdateStatus("Active")}>Published</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => bulkUpdateStatus("Draft")}>Draft</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => bulkUpdateStatus("Out of Stock")}>Out of Stock</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button variant="ghost" size="sm" onClick={clearSelectedProducts}>
+                Clear selection
+              </Button>
+            </div>
+          </div>
+        )}
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12">
+                <Checkbox
+                  checked={allVisibleSelected ? true : someVisibleSelected ? "indeterminate" : false}
+                  onCheckedChange={(checked) => toggleAllVisible(checked === true)}
+                  aria-label="Select all products"
+                />
+              </TableHead>
               <TableHead>Product</TableHead>
               <TableHead>SKU</TableHead>
               <TableHead>Category</TableHead>
@@ -218,13 +302,20 @@ export default function CatalogueDetail() {
           <TableBody>
             {products.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground py-10">
+                <TableCell colSpan={9} className="text-center text-muted-foreground py-10">
                   No products found.
                 </TableCell>
               </TableRow>
             )}
             {products.map((p) => (
               <TableRow key={p.id}>
+                <TableCell>
+                  <Checkbox
+                    checked={selectedProductIds.includes(p.id)}
+                    onCheckedChange={(checked) => toggleProductSelection(p.id, checked === true)}
+                    aria-label={`Select ${p.name}`}
+                  />
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <img src={p.image} alt={p.name} className="h-10 w-10 rounded-md object-cover" />
@@ -278,6 +369,110 @@ export default function CatalogueDetail() {
           </TableBody>
         </Table>
       </Card>
+
+      <Sheet
+        open={offerOpen}
+        onOpenChange={(open) => {
+            setOfferOpen(open);
+          if (!open) {
+            setOfferType(null);
+            setOfferPercent("");
+            setOfferRule("buy1get1");
+          }
+        }}
+      >
+        <SheetContent side="right" className="w-full max-w-2xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Apply Offer</SheetTitle>
+            <SheetDescription>
+              Apply an offer to {selectedCount} selected product{selectedCount === 1 ? "" : "s"}.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="grid gap-4 py-6">
+            <div className="grid gap-3 md:grid-cols-3">
+              <button
+                type="button"
+                onClick={() => setOfferType("discount")}
+                className={`rounded-2xl border p-4 text-left transition-colors ${
+                  offerType === "discount" ? "border-primary bg-primary/5" : "border-border/60 hover:bg-muted/40"
+                }`}
+              >
+                <div className="text-sm font-semibold">Apply discount</div>
+                <div className="mt-1 text-xs text-muted-foreground">Enter a percentage discount for selected products.</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setOfferType("bogo")}
+                className={`rounded-2xl border p-4 text-left transition-colors ${
+                  offerType === "bogo" ? "border-primary bg-primary/5" : "border-border/60 hover:bg-muted/40"
+                }`}
+              >
+                <div className="text-sm font-semibold">BOGO</div>
+                <div className="mt-1 text-xs text-muted-foreground">Buy one get one style promotion.</div>
+              </button>
+            </div>
+
+            {offerType === "bogo" && (
+              <div className="grid gap-4 rounded-2xl border border-border/60 bg-card p-4">
+                <div className="grid gap-2">
+                  <Label>BOGO Rule</Label>
+                  <Select value={offerRule} onValueChange={setOfferRule}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="buy1get1">Buy 1 Get 1</SelectItem>
+                      <SelectItem value="buy2get1">Buy 2 Get 1</SelectItem>
+                      <SelectItem value="buy3get1">Buy 3 Get 1</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
+            {offerType === "discount" && (
+              <div className="grid gap-4 rounded-2xl border border-border/60 bg-card p-4">
+                <div className="grid gap-2">
+                  <Label>Percentage</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={offerPercent}
+                    onChange={(e) => setOfferPercent(e.target.value)}
+                    placeholder="Enter percentage"
+                  />
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          <SheetFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setOfferOpen(false);
+                setOfferType(null);
+                setOfferPercent("");
+                setOfferRule("buy1get1");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setOfferOpen(false);
+                setOfferType(null);
+                setOfferPercent("");
+                setOfferRule("buy1get1");
+                setSelectedProductIds([]);
+              }}
+            >
+              Apply
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
 
       <Sheet open={productOpen} onOpenChange={setProductOpen}>
         <SheetContent side="right" className="w-full max-w-[72rem] overflow-y-auto p-0">
