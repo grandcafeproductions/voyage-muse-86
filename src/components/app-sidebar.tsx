@@ -4,7 +4,6 @@ import {
   Users,
   ShoppingBag,
   Wallet,
-  Package,
   Plane,
   Truck,
   ShoppingCart,
@@ -33,7 +32,6 @@ const items = [
   { title: "Abandoned Carts", url: "/abandoned-carts", icon: ShoppingCart },
   { title: "Catalogue", url: "/catalogue", icon: BookOpen },
   { title: "Accounting & Finance", url: "/accounting", icon: Wallet },
-  { title: "Services & Packages", url: "/services", icon: Package },
 ];
 
 export function AppSidebar() {
