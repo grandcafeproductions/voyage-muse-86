@@ -13,6 +13,8 @@ import Orders from "./pages/Orders.tsx";
 import Shipping from "./pages/Shipping.tsx";
 import ShippingSetup from "./pages/ShippingSetup.tsx";
 import AbandonedCarts from "./pages/AbandonedCarts.tsx";
+import Catalogue from "./pages/Catalogue.tsx";
+import CatalogueDetail from "./pages/CatalogueDetail.tsx";
 import Accounting from "./pages/Accounting.tsx";
 import Services from "./pages/Services.tsx";
 
@@ -34,6 +36,8 @@ const App = () => (
               <Route path="/shipping" element={<Shipping />} />
               <Route path="/shipping/setup" element={<ShippingSetup />} />
               <Route path="/abandoned-carts" element={<AbandonedCarts />} />
+              <Route path="/catalogue" element={<Catalogue />} />
+              <Route path="/catalogue/:type/:id" element={<CatalogueDetail />} />
               <Route path="/accounting" element={<Accounting />} />
               <Route path="/services" element={<Services />} />
             </Route>
