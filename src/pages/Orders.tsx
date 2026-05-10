@@ -452,7 +452,7 @@ function OrderDetailsSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-[60vw] !max-w-none overflow-y-auto p-0 sm:!max-w-none"
+        className="w-[80vw] !max-w-none overflow-y-auto p-0 sm:!max-w-none"
       >
         <SheetHeader className="sticky top-0 z-10 border-b border-border bg-background/95 px-6 py-4 backdrop-blur">
           <div className="flex items-start justify-between gap-4">
@@ -471,6 +471,48 @@ function OrderDetailsSheet({
         <div className="grid gap-6 px-6 py-6 lg:grid-cols-3">
           {/* LEFT: Order details */}
           <div className="space-y-6 lg:col-span-2">
+          {/* Bill To / Ship To / Dispatch Point */}
+          <Section title="Addresses">
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="rounded-lg border border-border bg-muted/30 p-3">
+                <div className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Bill To
+                </div>
+                <div className="text-sm font-medium">{order.customer.name}</div>
+                {order.customer.company && (
+                  <div className="text-xs text-muted-foreground">{order.customer.company}</div>
+                )}
+                <div className="mt-1 text-xs text-muted-foreground">{order.customer.address}</div>
+                {order.customer.gstn && (
+                  <div className="mt-1 text-[11px]">
+                    <span className="text-muted-foreground">GSTN: </span>
+                    <span className="font-mono">{order.customer.gstn}</span>
+                  </div>
+                )}
+              </div>
+              <div className="rounded-lg border border-border bg-muted/30 p-3">
+                <div className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Ship To
+                </div>
+                <div className="text-sm font-medium">{order.customer.name}</div>
+                <div className="mt-1 text-xs text-muted-foreground">{order.shippingAddress}</div>
+                <div className="mt-1 text-[11px] text-muted-foreground">
+                  <Phone className="inline h-3 w-3 mr-1" />{order.customer.phone}
+                </div>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/30 p-3">
+                <div className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Dispatch Point
+                </div>
+                <div className="text-sm font-medium">Mumbai Central Warehouse</div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Plot 7, MIDC Industrial Area, Andheri East, Mumbai, Maharashtra 400093
+                </div>
+                <div className="mt-1 text-[11px] text-muted-foreground">Code: DP-MUM-01</div>
+              </div>
+            </div>
+          </Section>
+
           <Section title="Order Items">
             <div className="overflow-hidden rounded-lg border border-border">
               <Table>
@@ -541,26 +583,62 @@ function OrderDetailsSheet({
 
           {/* Payment */}
           <Section title="Payment Details">
-            <Row label="Method" value={order.payment.method} />
-            <Row
-              label="Status"
-              value={
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    order.payment.status === "paid" && "bg-success/15 text-success border-success/30",
-                    order.payment.status === "pending" && "bg-warning/15 text-warning border-warning/30",
-                    order.payment.status === "refunded" && "bg-destructive/15 text-destructive border-destructive/30",
-                  )}
-                >
-                  {order.payment.status}
-                </Badge>
-              }
-            />
-            <Row label="Transaction ID" value={<span className="font-mono">{order.payment.txnId}</span>} />
-            {order.payment.paidOn && (
-              <Row label="Paid On" value={format(parseISO(order.payment.paidOn), "dd MMM yyyy, HH:mm")} />
-            )}
+            <div className="overflow-hidden rounded-lg border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Method</TableHead>
+                    <TableHead>Transaction ID</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(() => {
+                    const records = [
+                      {
+                        date: order.payment.paidOn ?? order.date,
+                        method: order.payment.method,
+                        txnId: order.payment.txnId,
+                        amount: subtotals.total * 0.6,
+                        status: order.payment.status,
+                      },
+                      {
+                        date: order.date,
+                        method: "Wallet",
+                        txnId: `TXN${Math.floor(Math.random() * 9000000 + 1000000)}`,
+                        amount: subtotals.total * 0.4,
+                        status: order.payment.status,
+                      },
+                    ];
+                    return records.map((p, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell className="text-xs text-muted-foreground tabular-nums">
+                          {format(parseISO(p.date), "dd MMM yyyy, HH:mm")}
+                        </TableCell>
+                        <TableCell className="text-sm">{p.method}</TableCell>
+                        <TableCell className="font-mono text-xs">{p.txnId}</TableCell>
+                        <TableCell className="text-right tabular-nums">{inr(p.amount)}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-[10px]",
+                              p.status === "paid" && "bg-success/15 text-success border-success/30",
+                              p.status === "pending" && "bg-warning/15 text-warning border-warning/30",
+                              p.status === "refunded" && "bg-destructive/15 text-destructive border-destructive/30",
+                            )}
+                          >
+                            {p.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ));
+                  })()}
+                </TableBody>
+              </Table>
+            </div>
           </Section>
 
           {/* Actions */}
@@ -597,6 +675,7 @@ function OrderDetailsSheet({
                 }
               />
               <Row label="Items" value={itemsCount(order)} />
+              <Row label="Shipping Method" value="Standard Courier (Bluedart)" />
               <Row label="Total" value={<span className="font-semibold">{inr(subtotals.total)}</span>} />
             </Section>
 
