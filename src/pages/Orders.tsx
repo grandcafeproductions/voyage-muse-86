@@ -468,48 +468,9 @@ function OrderDetailsSheet({
           </div>
         </SheetHeader>
 
-        <div className="space-y-6 px-6 py-6">
-          {/* Order info + Customer */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <Section title="Order Information">
-              <Row label="Order ID" value={<span className="font-mono">{order.id}</span>} />
-              <Row label="Date" value={format(parseISO(order.date), "dd MMM yyyy, HH:mm")} />
-              <Row label="Source" value={order.source} />
-              <Row
-                label="Status"
-                value={
-                  <Badge variant="outline" className={statusStyle[order.status]}>
-                    {statusLabel[order.status]}
-                  </Badge>
-                }
-              />
-            </Section>
-            <Section title="Customer Info">
-              <div className="text-sm font-medium">{order.customer.name}</div>
-              {order.customer.company && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Building2 className="h-3.5 w-3.5" /> {order.customer.company}
-                </div>
-              )}
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Phone className="h-3.5 w-3.5" /> {order.customer.phone}
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Mail className="h-3.5 w-3.5" /> {order.customer.email}
-              </div>
-              <div className="flex items-start gap-2 text-xs text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" /> {order.customer.address}
-              </div>
-              {order.customer.gstn && (
-                <div className="text-xs">
-                  <span className="text-muted-foreground">GSTN: </span>
-                  <span className="font-mono">{order.customer.gstn}</span>
-                </div>
-              )}
-            </Section>
-          </div>
-
-          {/* Items */}
+        <div className="grid gap-6 px-6 py-6 lg:grid-cols-3">
+          {/* LEFT: Order details */}
+          <div className="space-y-6 lg:col-span-2">
           <Section title="Order Items">
             <div className="overflow-hidden rounded-lg border border-border">
               <Table>
@@ -619,6 +580,102 @@ function OrderDetailsSheet({
               </Button>
             </div>
           </Section>
+          </div>
+
+          {/* RIGHT: Order info, Customer, Invoices */}
+          <div className="space-y-6 lg:col-span-1">
+            <Section title="Order Information">
+              <Row label="Order ID" value={<span className="font-mono">{order.id}</span>} />
+              <Row label="Date" value={format(parseISO(order.date), "dd MMM yyyy, HH:mm")} />
+              <Row label="Source" value={order.source} />
+              <Row
+                label="Status"
+                value={
+                  <Badge variant="outline" className={statusStyle[order.status]}>
+                    {statusLabel[order.status]}
+                  </Badge>
+                }
+              />
+              <Row label="Items" value={itemsCount(order)} />
+              <Row label="Total" value={<span className="font-semibold">{inr(subtotals.total)}</span>} />
+            </Section>
+
+            <Section title="Customer Info">
+              <div className="text-sm font-medium">{order.customer.name}</div>
+              {order.customer.company && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Building2 className="h-3.5 w-3.5" /> {order.customer.company}
+                </div>
+              )}
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Phone className="h-3.5 w-3.5" /> {order.customer.phone}
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Mail className="h-3.5 w-3.5" /> {order.customer.email}
+              </div>
+              <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" /> {order.customer.address}
+              </div>
+              {order.customer.gstn && (
+                <div className="text-xs">
+                  <span className="text-muted-foreground">GSTN: </span>
+                  <span className="font-mono">{order.customer.gstn}</span>
+                </div>
+              )}
+            </Section>
+
+            <Section title="Invoices">
+              <div className="space-y-2">
+                {[
+                  { id: `INV-${order.id.replace("ORD-", "")}`, date: order.date, amount: subtotals.total, status: order.payment.status },
+                ].map((inv) => (
+                  <div
+                    key={inv.id}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 p-2.5"
+                  >
+                    <div className="flex flex-col leading-tight">
+                      <span className="font-mono text-xs font-medium">{inv.id}</span>
+                      <span className="text-[11px] text-muted-foreground">
+                        {format(parseISO(inv.date), "dd MMM yyyy")} · {inr(inv.amount)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-[10px]",
+                          inv.status === "paid" && "bg-success/15 text-success border-success/30",
+                          inv.status === "pending" && "bg-warning/15 text-warning border-warning/30",
+                          inv.status === "refunded" && "bg-destructive/15 text-destructive border-destructive/30",
+                        )}
+                      >
+                        {inv.status}
+                      </Badge>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
+                        onClick={() => toast.info(`Viewing ${inv.id}`)}
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
+                        onClick={() => toast.info(`Downloading ${inv.id}`)}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                <Button size="sm" variant="outline" className="w-full" onClick={() => toast.info("Creating invoice")}>
+                  <Plus className="h-4 w-4" /> New Invoice
+                </Button>
+              </div>
+            </Section>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
