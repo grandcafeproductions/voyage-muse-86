@@ -19,6 +19,7 @@ import {
   Printer,
   Download,
   RefreshCcw,
+  Navigation,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
@@ -491,8 +492,20 @@ function OrderDetailsSheet({
                 )}
               </div>
               <div className="rounded-lg border border-border bg-muted/30 p-3">
-                <div className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Ship To
+                <div className="mb-1 flex items-center justify-between">
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Ship To
+                  </div>
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(order.shippingAddress)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-6 w-6 items-center justify-center rounded-md text-primary hover:bg-primary/10"
+                    title="Navigate with Google Maps"
+                    aria-label="Navigate with Google Maps"
+                  >
+                    <Navigation className="h-3.5 w-3.5" />
+                  </a>
                 </div>
                 <div className="text-sm font-medium">{order.customer.name}</div>
                 <div className="mt-1 text-xs text-muted-foreground">{order.shippingAddress}</div>
@@ -559,25 +572,6 @@ function OrderDetailsSheet({
               <SummaryRow label="GST" value={inr(subtotals.gst)} />
               <Separator className="my-1" />
               <SummaryRow label="Total" value={inr(subtotals.total)} bold />
-            </div>
-          </Section>
-
-          {/* Shipping */}
-          <Section title="Shipping Address">
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="flex items-start gap-2 text-sm">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <span>{order.shippingAddress}</span>
-              </div>
-              <div className="overflow-hidden rounded-lg border border-border">
-                <iframe
-                  title="Shipping location"
-                  aria-label={`Map of ${order.shippingAddress}`}
-                  className="h-44 w-full"
-                  loading="lazy"
-                  src={`https://www.google.com/maps?q=${encodeURIComponent(order.shippingAddress)}&output=embed`}
-                />
-              </div>
             </div>
           </Section>
 
