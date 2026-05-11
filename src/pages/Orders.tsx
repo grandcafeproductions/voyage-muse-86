@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ShoppingBag,
   Plus,
@@ -809,7 +809,7 @@ function EditOrderSheet({
 
   // reset form when a new order is opened
   const orderId = order?.id;
-  useMemo(() => {
+  useEffect(() => {
     if (order) {
       setBillTo(order.customer.address);
       setShipTo(order.shippingAddress);
@@ -820,22 +820,7 @@ function EditOrderSheet({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
 
-  if (!order) return null;
-
-  const updateQty = (idx: number, qty: number) => {
-    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, qty: Math.max(1, qty) } : it)));
-  };
-  const removeItem = (idx: number) => {
-    setItems((prev) => prev.filter((_, i) => i !== idx));
-  };
-  const addItem = () => {
-    setItems((prev) => [...prev, { name: "New Item", basePrice: 0, qty: 1, discount: 0, gstRate: 18 }]);
-  };
-  const updateField = <K extends keyof OrderItem>(idx: number, key: K, value: OrderItem[K]) => {
-    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, [key]: value } : it)));
-  };
-
-  // diff for change-log note
+  // diff for change-log note (must run before any early return)
   const changes = useMemo(() => {
     const added: string[] = [];
     const removed: string[] = [];
@@ -852,6 +837,21 @@ function EditOrderSheet({
     }
     return { added, removed, qtyChanged };
   }, [items, originalItems]);
+
+  if (!order) return null;
+
+  const updateQty = (idx: number, qty: number) => {
+    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, qty: Math.max(1, qty) } : it)));
+  };
+  const removeItem = (idx: number) => {
+    setItems((prev) => prev.filter((_, i) => i !== idx));
+  };
+  const addItem = () => {
+    setItems((prev) => [...prev, { name: "New Item", basePrice: 0, qty: 1, discount: 0, gstRate: 18 }]);
+  };
+  const updateField = <K extends keyof OrderItem>(idx: number, key: K, value: OrderItem[K]) => {
+    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, [key]: value } : it)));
+  };
 
   const hasChanges = changes.added.length + changes.removed.length + changes.qtyChanged.length > 0;
 
