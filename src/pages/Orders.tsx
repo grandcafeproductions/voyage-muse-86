@@ -251,6 +251,7 @@ export default function Orders() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | OrderStatus>("all");
   const [openId, setOpenId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
 
   const stats = useMemo(() => ({
     total: orders.length,
@@ -277,6 +278,7 @@ export default function Orders() {
   }, [orders, query, statusFilter]);
 
   const active = orders.find((o) => o.id === openId) ?? null;
+  const editing = orders.find((o) => o.id === editId) ?? null;
 
   const handleDelete = (id: string) => {
     setOrders((prev) => prev.filter((o) => o.id !== id));
@@ -394,7 +396,7 @@ export default function Orders() {
                         <DropdownMenuItem onClick={() => setOpenId(o.id)}>
                           <Eye className="h-4 w-4" /> View
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toast.info(`Editing ${o.id}`)}>
+                        <DropdownMenuItem onClick={() => setEditId(o.id)}>
                           <Pencil className="h-4 w-4" /> Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => toast.info(`Invoice for ${o.id} downloading`)}>
@@ -421,6 +423,17 @@ export default function Orders() {
         order={active}
         open={!!active}
         onOpenChange={(v) => !v && setOpenId(null)}
+      />
+
+      <EditOrderSheet
+        order={editing}
+        open={!!editing}
+        onOpenChange={(v) => !v && setEditId(null)}
+        onSave={(updated, note) => {
+          setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
+          setEditId(null);
+          toast.success(`Order ${updated.id} updated`, { description: note || undefined });
+        }}
       />
     </PageShell>
   );
