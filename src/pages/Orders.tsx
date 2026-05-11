@@ -60,6 +60,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
 type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
@@ -254,6 +255,7 @@ export default function Orders() {
   const [statusFilter, setStatusFilter] = useState<"all" | OrderStatus>("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const stats = useMemo(() => ({
     total: orders.length,
@@ -292,7 +294,7 @@ export default function Orders() {
       title="Orders"
       description="Manage e-commerce orders, fulfillment and payments."
       actions={
-        <Button onClick={() => toast.info("New order form coming soon")}>
+        <Button onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4" /> New Order
         </Button>
       }
@@ -435,6 +437,18 @@ export default function Orders() {
           setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
           setEditId(null);
           toast.success(`Order ${updated.id} updated`, { description: note || undefined });
+        }}
+      />
+
+      <CreateOrderSheet
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreate={(order, withInvoice) => {
+          setOrders((prev) => [order, ...prev]);
+          setCreateOpen(false);
+          toast.success(`Order ${order.id} created`, {
+            description: withInvoice ? "Invoice generated alongside order." : undefined,
+          });
         }}
       />
     </PageShell>
