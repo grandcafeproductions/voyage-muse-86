@@ -58,6 +58,8 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
@@ -251,6 +253,7 @@ export default function Orders() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | OrderStatus>("all");
   const [openId, setOpenId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
 
   const stats = useMemo(() => ({
     total: orders.length,
@@ -277,6 +280,7 @@ export default function Orders() {
   }, [orders, query, statusFilter]);
 
   const active = orders.find((o) => o.id === openId) ?? null;
+  const editing = orders.find((o) => o.id === editId) ?? null;
 
   const handleDelete = (id: string) => {
     setOrders((prev) => prev.filter((o) => o.id !== id));
@@ -394,7 +398,7 @@ export default function Orders() {
                         <DropdownMenuItem onClick={() => setOpenId(o.id)}>
                           <Eye className="h-4 w-4" /> View
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toast.info(`Editing ${o.id}`)}>
+                        <DropdownMenuItem onClick={() => setEditId(o.id)}>
                           <Pencil className="h-4 w-4" /> Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => toast.info(`Invoice for ${o.id} downloading`)}>
@@ -421,6 +425,17 @@ export default function Orders() {
         order={active}
         open={!!active}
         onOpenChange={(v) => !v && setOpenId(null)}
+      />
+
+      <EditOrderSheet
+        order={editing}
+        open={!!editing}
+        onOpenChange={(v) => !v && setEditId(null)}
+        onSave={(updated, note) => {
+          setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
+          setEditId(null);
+          toast.success(`Order ${updated.id} updated`, { description: note || undefined });
+        }}
       />
     </PageShell>
   );
@@ -772,6 +787,225 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className="text-right">{value}</span>
     </div>
+  );
+}
+
+function EditOrderSheet({
+  order,
+  open,
+  onOpenChange,
+  onSave,
+}: {
+  order: Order | null;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onSave: (updated: Order, note: string) => void;
+}) {
+  const [billTo, setBillTo] = useState("");
+  const [shipTo, setShipTo] = useState("");
+  const [items, setItems] = useState<OrderItem[]>([]);
+  const [note, setNote] = useState("");
+  const [originalItems, setOriginalItems] = useState<OrderItem[]>([]);
+
+  // reset form when a new order is opened
+  const orderId = order?.id;
+  useMemo(() => {
+    if (order) {
+      setBillTo(order.customer.address);
+      setShipTo(order.shippingAddress);
+      setItems(order.items.map((i) => ({ ...i })));
+      setOriginalItems(order.items.map((i) => ({ ...i })));
+      setNote("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId]);
+
+  if (!order) return null;
+
+  const updateQty = (idx: number, qty: number) => {
+    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, qty: Math.max(1, qty) } : it)));
+  };
+  const removeItem = (idx: number) => {
+    setItems((prev) => prev.filter((_, i) => i !== idx));
+  };
+  const addItem = () => {
+    setItems((prev) => [...prev, { name: "New Item", basePrice: 0, qty: 1, discount: 0, gstRate: 18 }]);
+  };
+  const updateField = <K extends keyof OrderItem>(idx: number, key: K, value: OrderItem[K]) => {
+    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, [key]: value } : it)));
+  };
+
+  // diff for change-log note
+  const changes = useMemo(() => {
+    const added: string[] = [];
+    const removed: string[] = [];
+    const qtyChanged: string[] = [];
+    const origByName = new Map(originalItems.map((o) => [o.name, o]));
+    const newByName = new Map(items.map((o) => [o.name, o]));
+    for (const it of items) {
+      const orig = origByName.get(it.name);
+      if (!orig) added.push(`${it.name} × ${it.qty}`);
+      else if (orig.qty !== it.qty) qtyChanged.push(`${it.name}: ${orig.qty} → ${it.qty}`);
+    }
+    for (const it of originalItems) {
+      if (!newByName.has(it.name)) removed.push(`${it.name} × ${it.qty}`);
+    }
+    return { added, removed, qtyChanged };
+  }, [items, originalItems]);
+
+  const hasChanges = changes.added.length + changes.removed.length + changes.qtyChanged.length > 0;
+
+  const handleSave = () => {
+    const updated: Order = {
+      ...order,
+      customer: { ...order.customer, address: billTo },
+      shippingAddress: shipTo,
+      items,
+    };
+    const noteParts: string[] = [];
+    if (changes.added.length) noteParts.push(`Added: ${changes.added.join(", ")}`);
+    if (changes.removed.length) noteParts.push(`Removed: ${changes.removed.join(", ")}`);
+    if (changes.qtyChanged.length) noteParts.push(`Qty changed: ${changes.qtyChanged.join(", ")}`);
+    if (note.trim()) noteParts.push(`Note: ${note.trim()}`);
+    onSave(updated, noteParts.join(" | "));
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        className="w-[70vw] !max-w-none overflow-y-auto p-0 sm:!max-w-none"
+      >
+        <SheetHeader className="sticky top-0 z-10 border-b border-border bg-background/95 px-6 py-4 backdrop-blur">
+          <SheetTitle className="font-mono text-base">Edit {order.id}</SheetTitle>
+          <SheetDescription>Update addresses and order items.</SheetDescription>
+        </SheetHeader>
+
+        <div className="space-y-6 px-6 py-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Bill To</Label>
+              <Textarea rows={3} value={billTo} onChange={(e) => setBillTo(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Ship To</Label>
+              <Textarea rows={3} value={shipTo} onChange={(e) => setShipTo(e.target.value)} />
+            </div>
+          </div>
+
+          <section className="rounded-xl border border-border bg-card p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Order Items
+              </h3>
+              <Button size="sm" variant="outline" onClick={addItem}>
+                <Plus className="h-4 w-4" /> Add Item
+              </Button>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item</TableHead>
+                  <TableHead className="w-28 text-right">Price</TableHead>
+                  <TableHead className="w-24 text-center">Qty</TableHead>
+                  <TableHead className="w-32 text-right">Total</TableHead>
+                  <TableHead className="w-12" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="py-6 text-center text-sm text-muted-foreground">
+                      No items. Add at least one.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  items.map((it, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>
+                        <Input
+                          value={it.name}
+                          onChange={(e) => updateField(idx, "name", e.target.value)}
+                          className="h-8"
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Input
+                          type="number"
+                          value={it.basePrice}
+                          onChange={(e) => updateField(idx, "basePrice", Number(e.target.value))}
+                          className="h-8 text-right"
+                        />
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Input
+                          type="number"
+                          min={1}
+                          value={it.qty}
+                          onChange={(e) => updateQty(idx, Number(e.target.value))}
+                          className="h-8 text-center"
+                        />
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums font-medium">
+                        {inr(lineTotals(it).total)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive"
+                          onClick={() => removeItem(idx)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </section>
+
+          {hasChanges && (
+            <section className="rounded-xl border border-border bg-muted/30 p-4">
+              <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Change Summary
+              </h3>
+              <ul className="space-y-1 text-sm">
+                {changes.added.map((c, i) => (
+                  <li key={`a-${i}`} className="text-success">+ Added: {c}</li>
+                ))}
+                {changes.removed.map((c, i) => (
+                  <li key={`r-${i}`} className="text-destructive">− Removed: {c}</li>
+                ))}
+                {changes.qtyChanged.map((c, i) => (
+                  <li key={`q-${i}`} className="text-warning">~ Qty: {c}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          <div className="space-y-2">
+            <Label>Note</Label>
+            <Textarea
+              rows={3}
+              placeholder="Reason for edit, additional context..."
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 border-t border-border pt-4">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={items.length === 0}>
+              Save Changes
+            </Button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
