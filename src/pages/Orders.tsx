@@ -58,6 +58,8 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
